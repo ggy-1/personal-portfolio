@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000" role="img" aria-label="û¨ïûhyîb">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#05070D" />
+      <stop offset="1" stop-color="#0A0E17" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6EA8FE" />
+      <stop offset="1" stop-color="#A78BFA" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#bg)" />
+
+  <g>
+    <rect x="600" y="180" width="400" height="660" rx="36" fill="#111722" stroke="#232C3D" stroke-width="3" />
+    <rect x="640" y="240" width="320" height="14" rx="7" fill="#33405A" />
+    <rect x="640" y="288" width="260" height="14" rx="7" fill="#232C3D" />
+    <rect x="640" y="336" width="300" height="14" rx="7" fill="#232C3D" />
+    <rect x="640" y="384" width="200" height="14" rx="7" fill="#232C3D" />
+    <rect x="640" y="432" width="290" height="14" rx="7" fill="#232C3D" />
+    <rect x="640" y="480" width="240" height="14" rx="7" fill="#232C3D" />
+    <rect x="640" y="528" width="280" height="14" rx="7" fill="#232C3D" />
+    <rect x="640" y="600" width="320" height="4" rx="2" fill="#232C3D" />
+    <rect x="640" y="600" width="196" height="4" rx="2" fill="url(#accent)" />
+  </g>
+
+  <g fill="none" stroke="url(#accent)" stroke-width="4">
+    <path d="M470 430a70 70 0 1 1 0 140" opacity="0.85" />
+    <path d="M420 470a120 120 0 1 1 0 60" opacity="0.45" />
+    <path d="M1130 430a70 70 0 1 0 0 140" opacity="0.85" />
+    <path d="M1180 470a120 120 0 1 0 0 60" opacity="0.45" />
+  </g>
+
+  <text
+    x="800"
+    y="920"
+    text-anchor="middle"
+    font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+    font-size="60"
+    font-weight="700"
+    fill="#E9EDF5"
+  >
+    Pocket Reader
+  </text>
+  <text
+    x="800"
+    y="962"
+    text-anchor="middle"
+    font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+    font-size="26"
+    fill="#A6AFC2"
+  >
+    Offline first · IndexedDB · PostgreSQL
+  </text>
+</svg>

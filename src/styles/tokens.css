@@ -1,0 +1,126 @@
+/**
+ * 设计 token —— 全站样式值的唯一来源（对应 docs/PRD.md 附录 C）
+ *
+ * 规则（AGENTS.md 4.2）：
+ *  1. 组件里禁止出现字面量颜色 / 间距 / 圆角 / 动效时长，一律引用本文件的变量；
+ *  2. 语义 token（--bg-* / --fg-* / --border-*）优先于原始 token（--c-* / --sp-*）；
+ *  3. 主题切换只改本文件，不改任何组件。
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* ========== primitive：颜色 ========== */
+  --c-space-900: #05070d;
+  --c-space-800: #0a0e17;
+  --c-surface-700: #111722;
+  --c-surface-600: #182030;
+  --c-border-500: #232c3d;
+  --c-border-400: #33405a;
+  --c-text-hi: #e9edf5;
+  --c-text-mid: #a6afc2;
+  --c-text-lo: #6e7889;
+  --c-accent: #6ea8fe;
+  --c-accent-2: #a78bfa;
+  --c-success: #4ade80;
+  --c-warning: #fbbf24;
+  --c-danger: #f87171;
+
+  --c-accent-soft: rgb(110 168 254 / 0.12);
+  --c-accent-2-soft: rgb(167 139 250 / 0.12);
+  --c-page-overlay: rgb(5 7 13 / 0.72);
+
+  /* ========== semantic：语义 ========== */
+  --bg-page: var(--c-space-900);
+  --bg-subtle: var(--c-space-800);
+  --bg-elevated: var(--c-surface-700);
+  --bg-elevated-hover: var(--c-surface-600);
+  --bg-overlay: var(--c-page-overlay);
+  --fg-primary: var(--c-text-hi);
+  --fg-secondary: var(--c-text-mid);
+  --fg-muted: var(--c-text-lo);
+  --border-default: var(--c-border-500);
+  --border-strong: var(--c-border-400);
+  --border-focus: var(--c-accent);
+  --brand: var(--c-accent);
+  --brand-2: var(--c-accent-2);
+  --brand-soft: var(--c-accent-soft);
+  --brand-gradient: linear-gradient(135deg, var(--c-accent), var(--c-accent-2));
+
+  /* ========== 字体 ==========
+     中文一律走系统字体栈：完整中文字体单文件 3–10MB，自托管会毁掉首屏（TECH_DESIGN T10）。
+     英文与等宽字体的自托管接入见 README「待办」。 */
+  --font-sans-stack:
+    system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+    'Noto Sans SC', sans-serif;
+  --font-mono-stack:
+    ui-monospace, 'JetBrains Mono', 'Cascadia Mono', Consolas, 'SFMono-Regular', Menlo, monospace;
+
+  /* ========== 间距（4px 基数） ========== */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-24: 96px;
+
+  /* ========== 圆角 ========== */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+  --r-full: 999px;
+
+  /* ========== 动效 ========== */
+  --d-hover: 150ms;
+  --d-expand: 250ms;
+  --d-enter: 400ms;
+  --d-drift: 8s;
+  --e-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ========== 层级 ==========
+     星空层为负值：它必须位于页面内容之下、又高于 html 的背景色。
+     因此页面背景色只能画在 html 上，body 必须保持透明（见 globals.css 说明）。 */
+  --z-stars: -1;
+  --z-content: 1;
+  --z-sticky: 50;
+  --z-nav: 100;
+  --z-overlay: 200;
+  --z-toast: 300;
+
+  /* ========== 星空 ==========
+     画布无法直接使用 CSS 变量，由 useStarRenderer 在运行时读取这些 token，
+     保证星星颜色与主题同源，改主题不用改画布代码。 */
+  --star-color-far: #8ea2c6;
+  --star-color-mid: #cfdcf5;
+  --star-color-near: #ffffff;
+  --nebula-blue: rgb(110 168 254 / 0.1);
+  --nebula-violet: rgb(167 139 250 / 0.09);
+  --nebula-deep: rgb(5 7 13 / 0);
+
+  /* ========== 尺寸 ========== */
+  --content-max: 1200px;
+  --prose-max: 68ch;
+  --header-h: 64px;
+  --header-offset: calc(var(--header-h) + 24px);
+}
+
+/* 移动端顶栏更矮，锚点偏移同步收窄（T7） */
+@media (max-width: 767px) {
+  :root {
+    --header-h: 56px;
+  }
+}
+
+/* 尊重系统的「减少动态效果」：所有时长归零，星空降级为静态（星空组件另行判定） */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --d-hover: 0ms;
+    --d-expand: 0ms;
+    --d-enter: 0ms;
+    --d-drift: 0ms;
+  }
+}

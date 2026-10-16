@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" role="img" aria-label="4Ï`Mþ">
+  <defs>
+    <linearGradient id="avatar-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111722" />
+      <stop offset="1" stop-color="#0A0E17" />
+    </linearGradient>
+    <linearGradient id="avatar-accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6EA8FE" />
+      <stop offset="1" stop-color="#A78BFA" />
+    </linearGradient>
+  </defs>
+
+  <rect width="400" height="400" fill="url(#avatar-bg)" />
+  <circle cx="200" cy="158" r="66" fill="none" stroke="url(#avatar-accent)" stroke-width="6" />
+  <path
+    d="M76 356c0-56 55-96 124-96s124 40 124 96z"
+    fill="none"
+    stroke="url(#avatar-accent)"
+    stroke-width="6"
+  />
+  <g fill="#E9EDF5">
+    <circle cx="64" cy="72" r="2.2" opacity="0.6" />
+    <circle cx="338" cy="112" r="1.8" opacity="0.5" />
+    <circle cx="300" cy="60" r="2.6" opacity="0.7" />
+    <circle cx="86" cy="300" r="1.8" opacity="0.45" />
+  </g>
+</svg>

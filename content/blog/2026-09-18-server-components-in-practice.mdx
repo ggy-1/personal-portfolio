@@ -1,0 +1,85 @@
+---
+title: 在 App Router 里正确使用 Server Components
+date: 2026-09-18
+summary: 把整页标记成 'use client' 是最省事也最贵的做法。这篇记录我如何把一个内容型页面拆回服务端渲染，并把客户端 JS 从 210KB 降到 84KB。
+tags: [React, Next.js, 性能优化]
+cover: /images/blog/server-components.svg
+---
+
+开始用 App Router 时，我做的第一件事是给一个页面的顶层加上 `'use client'`。它能编译、能跑、看起来一切正常——直到我打开 Network 面板。
+
+## 问题：'use client' 会向上传染
+
+`'use client'` 定义的不是「这个文件是客户端组件」，而是「客户端边界从这里开始」。它下面 import 的所有东西都会被打进客户端 bundle，无论那些子组件自己有没有声明 `'use client'`。
+
+所以真正的问题不是那一个组件，而是它 import 的整棵子树：图标库、日期格式化工具、Markdown 渲染器，全部跟着进了客户端包。
+
+<Callout variant="warning">
+判断标准是「这段代码需要浏览器 API 吗」，而不是「这个组件看起来很简单」。
+一个只做展示的组件放在客户端边界下面，同样会付出传输和解析的代价。
+</Callout>
+
+## 做法：把边界压到叶子
+
+改造的思路只有一句话：**让 `'use client'` 尽可能靠近真正需要交互的那个 DOM 节点。**
+
+具体顺序：
+
+1. 把页面顶层恢复成服务端组件，去掉 `'use client'`；
+2. 逐个检查报错的子组件，找出真正用到 `useState`、事件处理器或浏览器 API 的那几个；
+3. 只给这几个文件加 `'use client'`；
+4. 如果它们的 props 里有复杂对象，先想清楚这些数据是否真的要跨边界传递。
+
+第 4 步最容易被忽略。React 会把跨边界的 props 序列化成 RSC payload，把一个很大的对象传过去，等于把体积从 JS 挪到了 HTML。
+
+### 用 children 把服务端内容送进客户端组件
+
+当一个客户端组件需要包裹服务端渲染的内容时，不要让它自己 import 那些内容，而是通过 `children` 传进去：
+
+```tsx
+// Tabs 需要交互，所以是客户端组件
+'use client';
+
+export function Tabs({ children }: { children: React.ReactNode }) {
+  const [active, setActive] = useState(0);
+  return <div onClick={() => setActive((n) => n + 1)}>{children}</div>;
+}
+```
+
+```tsx
+// 页面是服务端组件：Markdown 正文不会被送进客户端包
+export default async function Page() {
+  const body = await renderMarkdown(source);
+  return <Tabs>{body}</Tabs>;
+}
+```
+
+`children` 是已经渲染好的 React 节点，它在服务端生成、以 RSC payload 的形式传输，不会变成组件的 JS。
+
+## 结果与代价
+
+同一个页面，改造前后：
+
+| 指标 | 改造前 | 改造后 |
+| --- | --- | --- |
+| 首屏 JS（gzip） | 210KB | 84KB |
+| 正文相关客户端代码 | 有 | 0 字节 |
+| 水合耗时（4x 降速） | 约 640ms | 约 180ms |
+
+代价是心智负担：你需要时刻知道某段代码运行在哪一侧。有几个具体的坑值得提前知道：
+
+- 服务端组件里不能用 `useState`、`useEffect`、事件处理器；
+- 客户端组件不能是 `async` 函数；
+- `useSearchParams()` 会让最近的 Suspense 边界变成客户端渲染，静态化页面时要注意；
+- 在服务端组件里读取 `Date.now()` 或 `Math.random()` 会导致水合不一致。
+
+最后一条我踩过：列表项用了随机数当 key，服务端和客户端生成的 key 不同，React 直接警告丢弃整棵子树。现在这类值一律在构建期算好，或者放到 `useEffect` 里。
+
+<Callout variant="info">
+如果你只想记住一件事：**先默认服务端，遇到交互再下沉边界**。
+反过来的成本（从客户端回收服务端）要高得多，因为边界一旦向上传染过，你很难看出哪些代码是「顺带」进去的。
+</Callout>
+
+## 小结
+
+`'use client'` 不是性能优化开关，它是架构决策。把它当成「这里开始要付传输成本」来对待，大多数页面不需要在顶层声明它。

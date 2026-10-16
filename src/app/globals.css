@@ -1,0 +1,364 @@
+@import 'tailwindcss';
+@import '../styles/tokens.css';
+
+/**
+ * Tailwind 主题映射
+ *
+ * 这里只做「token → 工具类」的翻译，不产生新的设计值：
+ * 所有值都来自 src/styles/tokens.css，改设计只改 tokens.css。
+ *
+ * 类名词汇表（供全站统一使用）：
+ *   背景   bg-page / bg-subtle / bg-surface / bg-surface-hover / bg-accent-soft
+ *   文字   text-fg / text-fg-secondary / text-fg-muted / text-accent
+ *   描边   border-line / border-line-strong / border-focus
+ *   圆角   rounded-sm|md|lg|xl|full
+ *   动效   duration-hover / duration-expand / duration-enter / ease-out-quint
+ * 语义类（bg-surface）优先于原始类（bg-surface-700），见 AGENTS.md 4.2。
+ */
+@theme inline {
+  /* 断点固定为 480 / 768 / 1024 / 1280 / 1920，禁止临时新增（AGENTS.md 第 8 节） */
+  --breakpoint-sm: 480px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1920px;
+
+  /* 语义色 */
+  --color-page: var(--bg-page);
+  --color-subtle: var(--bg-subtle);
+  --color-surface: var(--bg-elevated);
+  --color-surface-hover: var(--bg-elevated-hover);
+
+  --color-fg: var(--fg-primary);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-fg-muted: var(--fg-muted);
+
+  --color-line: var(--border-default);
+  --color-line-strong: var(--border-strong);
+  --color-focus: var(--border-focus);
+
+  --color-accent: var(--brand);
+  --color-accent-2: var(--brand-2);
+  --color-accent-soft: var(--brand-soft);
+  --color-success: var(--c-success);
+  --color-warning: var(--c-warning);
+  --color-danger: var(--c-danger);
+
+  /* 原始色（供极少数需要 primitive 的场景，例如星空画布取值） */
+  --color-space-900: var(--c-space-900);
+  --color-space-800: var(--c-space-800);
+  --color-surface-700: var(--c-surface-700);
+  --color-surface-600: var(--c-surface-600);
+
+  /* 圆角 */
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --radius-full: var(--r-full);
+
+  /* 字体 */
+  --font-sans: var(--font-sans-stack);
+  --font-mono: var(--font-mono-stack);
+}
+
+@layer base {
+  /* 背景色必须画在 html 上：星空层是 z-index 负值的 fixed 元素，
+     它位于 html 背景之上、body 背景之下。若给 body 加背景色，星空会被完全遮住。 */
+  html {
+    background-color: var(--bg-page);
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: transparent;
+    color: var(--fg-primary);
+    font-family: var(--font-sans-stack);
+    font-size: 1rem;
+    line-height: 1.75;
+    letter-spacing: 0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: var(--fg-primary);
+    text-wrap: balance;
+  }
+
+  /* 焦点环：任何交互元素都必须可见（AGENTS.md 第 5 节） */
+  :focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+    border-radius: var(--r-sm);
+  }
+
+  ::selection {
+    background-color: var(--c-accent-2-soft);
+    color: var(--fg-primary);
+  }
+
+  /* 尊重「减少动态效果」：关闭平滑滚动与所有入场动效 */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ========== 自定义工具类 ========== */
+
+/* Hero 主标题：用 clamp 而非逐断点写死字号（PRD 5.4） */
+@utility hero-title {
+  font-size: clamp(2rem, 1.2rem + 3.4vw, 3.5rem);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+/* 品牌渐变文字，仅用于 Hero 关键词 */
+@utility brand-text {
+  background-image: var(--brand-gradient);
+  background-clip: text;
+  color: transparent;
+  -webkit-background-clip: text;
+}
+
+/* 动效时长与缓动：只暴露 token 里的四档，禁止在组件里写 250ms 这类字面量 */
+@utility duration-hover {
+  transition-duration: var(--d-hover);
+}
+
+@utility duration-expand {
+  transition-duration: var(--d-expand);
+}
+
+@utility duration-enter {
+  transition-duration: var(--d-enter);
+}
+
+@utility ease-out-quint {
+  transition-timing-function: var(--e-out);
+}
+
+/* 正文宽度控制：60–75 字符（PRD 5.4） */
+@utility prose-width {
+  max-width: var(--prose-max);
+}
+
+/* ========== 星空层 ==========
+   层级契约：fixed 全屏、z-index 为负值（位于 html 背景之上、内容之下）、
+   不拦截指针事件、对辅助技术隐藏。任何一项改动都会影响全站可读性。 */
+.star-field {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-stars);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* L1 星云底色：纯 CSS，不依赖 JS，因此即使画布初始化失败或禁用 JS 也仍有氛围 */
+.star-field__nebula {
+  position: absolute;
+  inset: -10%;
+  background-image:
+    radial-gradient(38% 30% at 18% 12%, var(--nebula-blue), var(--nebula-deep) 70%),
+    radial-gradient(42% 34% at 82% 24%, var(--nebula-violet), var(--nebula-deep) 72%),
+    radial-gradient(50% 40% at 50% 100%, var(--nebula-blue), var(--nebula-deep) 76%);
+}
+
+/* L2–L4 星点画布：由 useStarRenderer 绘制 */
+.star-field__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ========== MDX 文章正文排版 ==========
+   v1 不引入 @tailwindcss/typography：默认样式是浅色取向，
+   覆盖成本高于直接按 token 写，且这里需要严格控制对比度（AGENTS.md 第 7 节）。 */
+.mdx {
+  color: var(--fg-secondary);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.mdx > * + * {
+  margin-top: var(--sp-4);
+}
+
+.mdx h2,
+.mdx h3,
+.mdx h4 {
+  color: var(--fg-primary);
+  font-weight: 600;
+  /* 锚点跳转后不被固定顶栏遮挡（TECH_DESIGN T7） */
+  scroll-margin-top: var(--header-offset);
+}
+
+.mdx h2 {
+  margin-top: var(--sp-12);
+  font-size: 1.5rem;
+  line-height: 1.3;
+}
+
+.mdx h3 {
+  margin-top: var(--sp-8);
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+.mdx h4 {
+  margin-top: var(--sp-6);
+  font-size: 1.0625rem;
+}
+
+.mdx a {
+  color: var(--brand);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+  transition: text-decoration-color var(--d-hover) var(--e-out);
+}
+
+.mdx a:hover {
+  text-decoration-color: var(--brand);
+}
+
+.mdx strong {
+  color: var(--fg-primary);
+  font-weight: 600;
+}
+
+.mdx ul,
+.mdx ol {
+  padding-left: 1.25rem;
+}
+
+.mdx ul {
+  list-style: disc;
+}
+
+.mdx ol {
+  list-style: decimal;
+}
+
+.mdx li + li {
+  margin-top: var(--sp-2);
+}
+
+.mdx li::marker {
+  color: var(--fg-muted);
+}
+
+.mdx blockquote {
+  border-left: 2px solid var(--brand);
+  padding-left: var(--sp-4);
+  color: var(--fg-muted);
+}
+
+.mdx code {
+  font-family: var(--font-mono-stack);
+  font-size: 0.875em;
+}
+
+/* 行内代码（不含代码块内的 code） */
+.mdx :not(pre) > code {
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-sm);
+  padding: 0.15em 0.4em;
+  color: var(--fg-primary);
+}
+
+.mdx pre {
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+  padding: var(--sp-4);
+  overflow-x: auto;
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  /* 长代码块横向滚动即可，不要撑破布局 */
+  max-width: 100%;
+}
+
+.mdx pre code {
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+.mdx img {
+  border-radius: var(--r-md);
+  height: auto;
+}
+
+.mdx hr {
+  margin-block: var(--sp-12);
+  border-color: var(--border-default);
+}
+
+.mdx table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.mdx th,
+.mdx td {
+  border: 1px solid var(--border-default);
+  padding: var(--sp-2) var(--sp-3);
+  text-align: left;
+}
+
+.mdx th {
+  background-color: var(--bg-subtle);
+  color: var(--fg-primary);
+  font-weight: 600;
+}
+
+/* ========== 打印样式 ==========
+   星空、导航、动效全部隐藏，正文转白底黑字（PRD 5.7，简历与文章打印场景） */
+@media print {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    background: #fff;
+  }
+
+  body {
+    color: #111;
+    font-size: 12pt;
+  }
+
+  .star-field,
+  .no-print {
+    display: none !important;
+  }
+
+  .mdx,
+  .mdx h2,
+  .mdx h3,
+  .mdx h4,
+  .mdx strong {
+    color: #111;
+  }
+}
